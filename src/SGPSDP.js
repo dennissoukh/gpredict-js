@@ -197,8 +197,6 @@ class PredictSGPSDP
         e = sat.tle.eo - tempe;
         xl = xmp + omega + xnode + sat.sgps.xnodp * templ;
 
-        // console.log(xmp, omega, xnode, sat.sgps.xnodp, templ)
-
         beta = Math.sqrt(1.0 - (e * e));
         xn = Constants.xke / Math.pow(a, 1.5);
 
@@ -288,8 +286,6 @@ class PredictSGPSDP
         if (sat.phase < 0) {
             sat.phase += Constants.twopi;
         }
-
-        //!! console.log(xlt, xnode, omgadf)
 
         sat.phase = PredictMath.FMod2p(sat.phase);
 
@@ -676,7 +672,7 @@ class PredictSGPSDP
                     sat.dps.xh2 = -2 * s2 * z22;
                     sat.dps.xh3 = -2 * s2 * (z23 - z21);
 
-                    if (sat.flags && this.LUNAR_TERMS_DONE_FLAG) {
+                    if (sat.flags & this.LUNAR_TERMS_DONE_FLAG) {
                         break;
                     }
 
@@ -1056,10 +1052,10 @@ class PredictSGPSDP
         } /* End switch(ientry) */
     } /** End of Deep()*/
 
-    getInstance = () =>
-    {
-        return PredictSGPSDP;
-    }
+    // getInstance = () =>
+    // {
+    //     return PredictSGPSDP;
+    // }
 }
 
 module.exports = PredictSGPSDP

@@ -1,7 +1,6 @@
-const PredictTLE = require('../src/TLE');
-const PredictSat = require('../src/Sat');
-const PredictSGPSDP = require('../src/SGPSDP');
-const PredictMath = require('../src/Math');
+const PredictTLE    = require('../src/TLE');
+const PredictSat    = require('../src/Sat');
+const PredictMath   = require('../src/Math');
 
 const satTle = {
     line0: 'TEST SAT SDP 001',
@@ -60,11 +59,10 @@ const expected = [
 let data    = [],
     tle     = new PredictTLE(satTle.line0, satTle.line1, satTle.line2),
     sat     = new PredictSat(tle),
-    sgpsdp  = new PredictSGPSDP,
     count   = 0;
 
 expected.forEach(e => {
-    sgpsdp.SGP4(sat, e.step);
+    sat.sgpsdp.SGP4(sat, e.step);
     PredictMath.ConvertSatState(sat.pos, sat.vel);
 
     data[count] = {
@@ -115,5 +113,5 @@ expected.forEach(e => {
     };
 });
 
-console.log(`DEEP_SPACE_EPHEM: ${sat.flags & sgpsdp.DEEP_SPACE_EPHEM_FLAG} (expected: 64)`)
+console.log(`DEEP_SPACE_EPHEM: ${sat.flags & sat.sgpsdp.DEEP_SPACE_EPHEM_FLAG} (expected: 64)`)
 console.log(data);

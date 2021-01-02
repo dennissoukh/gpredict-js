@@ -59,13 +59,12 @@ const expected = [
 
 let data = [];
 let tle = new PredictTLE(satTle.line0, satTle.line1, satTle.line2),
-    sat = new PredictSat(tle),
-    sgpsdp = new PredictSGPSDP;
+    sat = new PredictSat(tle);
 
 let count = 0;
 
 expected.forEach(e => {
-    sgpsdp.SGP4(sat, e.step);
+    sat.sgpsdp.SGP4(sat, e.step);
     PredictMath.ConvertSatState(sat.pos, sat.vel);
 
     data[count] = {

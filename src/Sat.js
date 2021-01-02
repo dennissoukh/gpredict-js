@@ -52,6 +52,8 @@ class PredictSat
     orbit       = null;   /* orbit number */
     otype       = null;   /* orbit type. */
 
+    sgpsdp      = new SGPSDP();
+
     constructor(tle)
     {
         const headerParts   = tle.header.split(" ");
@@ -62,7 +64,7 @@ class PredictSat
         this.vel            = new Vector();
         this.sgps           = new SGSDPStatic();
         this.deep_arg       = new DeepArg();
-        this.dps            = new DeepStatic();
+        this.dps            = new DeepStatic(),
 
         this.selectEphemeris();
         this.satDataInit(this);
@@ -104,9 +106,9 @@ class PredictSat
         xnodp               = this.tle.xno / (delo + 1.0);
 
         if (Constants.twopi / xnodp / Constants.xmnpda >= .15625) {
-            this.flags      |= SGPSDP.DEEP_SPACE_EPHEM_FLAG
+            this.flags      |= this.sgpsdp.DEEP_SPACE_EPHEM_FLAG
         } else {
-            this.flags      &= ~SGPSDP.DEEP_SPACE_EPHEM_FLAG
+            this.flags      &= ~this.sgpsdp.DEEP_SPACE_EPHEM_FLAG
         }
     }
 
@@ -123,8 +125,7 @@ class PredictSat
         let obs_geodetic    = new Geodetic(),
             obs_set         = new ObsSet(),
             sat_geodetic    = new Geodetic(),
-            jul_utc         = Time.JulianDateOfEpoch(sat.tle.epoch),
-            sdpsgp;
+            jul_utc         = Time.JulianDateOfEpoch(sat.tle.epoch);
 
         sat.jul_epoch       = jul_utc;
 
@@ -142,12 +143,10 @@ class PredictSat
         }
 
         // Execute computations
-        sdpsgp = new SGPSDP;
-        // sdpsgp = sdpsgp.getInstance(sat);
-        if (sat.flags && SGPSDP.DEEP_SPACE_EPHEM_FLAG) {
-            sdpsgp.SDP4(sat, 0.0);
+        if (sat.flags & this.sgpsdp.DEEP_SPACE_EPHEM_FLAG) {
+            this.sgpsdp.SDP4(sat, 0.0);
         } else {
-            sdpsgp.SGP4(sat, 0.0);
+            this.sgpsdp.SGP4(sat, 0.0);
         }
 
         // Scale position and velocity to km and km/sec
@@ -193,16 +192,14 @@ class PredictSat
      */
     getOrbitType = (sat) =>
     {
-        let sgpsdp = new SGPSDP;
-
-        let orbit = sgpsdp.ORBIT_TYPE_UNKNOWN;
+        let orbit = this.sgpsdp.ORBIT_TYPE_UNKNOWN;
 
         if (this.geostationary(sat)) {
-            orbit = sgpsdp.ORBIT_TYPE_GEO
+            orbit = this.sgpsdp.ORBIT_TYPE_GEO
         } else if (this.decayed(sat)) {
-            orbit = sgpsdp.ORBIT_TYPE_DECAYED;
+            orbit = this.sgpsdp.ORBIT_TYPE_DECAYED;
         } else {
-            orbit = sgpsdp.ORBIT_TYPE_UNKNOWN;
+            orbit = this.sgpsdp.ORBIT_TYPE_UNKNOWN;
         }
 
         return orbit;
