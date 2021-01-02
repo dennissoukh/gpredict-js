@@ -1,0 +1,13 @@
+{
+  "name": "gpredict-js",
+  "version": "1.0.0",
+  "description": "A partial fork of the Gpredict program for real-time satellite tracking and orbit prediction",
+  "main": "index.js",
+  "repository": "https://github.com/dennissoukhikh/gpredict-js.git",
+  "author": "Dennis Soukhikh <dennis.soukhikh@outlook.ie>",
+  "license": "GPL-2.0",
+  "devDependencies": {
+    "eslint": "^7.17.0",
+    "eslint-config-google": "^0.14.0"
+  }
+}
