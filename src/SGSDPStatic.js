@@ -1,5 +1,7 @@
-class PredictSGSDPStatic
-{
+/**
+ * Static data for SGP4 and SDP4
+ */
+class PredictSGSDPStatic {
     aodp;
     aycof;
     c1;
@@ -30,4 +32,4 @@ class PredictSGSDPStatic
     xlcof;
 }
 
-module.exports = PredictSGSDPStatic
+module.exports = PredictSGSDPStatic;
