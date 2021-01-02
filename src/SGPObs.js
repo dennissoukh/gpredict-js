@@ -10,7 +10,7 @@ class PredictSGPObs
         let sinGeodeticLat, c, sq, achcp;
 
         sinGeodeticLat      = Math.sin(geodetic.lat);
-        geodetic.theta      = PredictMath.FMod2p(Time.ThetaG_JD(time) + geodetic.lon);  /* LMST */
+        geodetic.theta      = PredictMath.fMod2p(Time.ThetaG_JD(time) + geodetic.lon);  /* LMST */
 
         c                   = 1 / Math.sqrt(1 + Constants.__f * (Constants.__f - 2) * sinGeodeticLat * sinGeodeticLat);
         sq                  = (1 - Constants.__f) * (1 - Constants.__f) * c;
@@ -29,19 +29,19 @@ class PredictSGPObs
     CalculateLatLonAlt = (_time, pos, geodetic) =>
     {
         let r, e2, phi, sinPhi, c;
-        geodetic.theta  = PredictMath.AcTan(pos.y, pos.x);                              /*radians*/
-        geodetic.lon    = PredictMath.FMod2p(geodetic.theta - Time.ThetaG_JD(_time));   /*radians*/
+        geodetic.theta  = PredictMath.acTan(pos.y, pos.x);                              /*radians*/
+        geodetic.lon    = PredictMath.fMod2p(geodetic.theta - Time.ThetaG_JD(_time));   /*radians*/
 
         r               = Math.sqrt((pos.x * pos.x) + (pos.y * pos.y));
         e2              = Constants.__f * (2 - Constants.__f);
 
-        geodetic.lat    = PredictMath.AcTan(pos.z, r);
+        geodetic.lat    = PredictMath.acTan(pos.z, r);
 
         do {
             phi         = geodetic.lat;
             sinPhi      = Math.sin(phi);
             c           = 1 / Math.sqrt(1 - e2 * (sinPhi * sinPhi));
-            geodetic.lat = PredictMath.AcTan(pos.z + Constants.xkmper * c * e2 * sinPhi, r);
+            geodetic.lat = PredictMath.acTan(pos.z + Constants.xkmper * c * e2 * sinPhi, r);
         } while (Math.abs(geodetic.lat - phi) >= 1e-10);
 
         geodetic.alt = r / Math.cos(geodetic.lat) - Constants.xkmper * c;
@@ -95,14 +95,14 @@ class PredictSGPObs
             azim = azim + Constants.twopi;
         }
 
-        el = PredictMath.ArcSin(top_z / range.w);
+        el = Math.asin(top_z / range.w);
 
         obs_set.az      = azim;         /* Azimuth (radians)   */
         obs_set.el      = el;           /* Elevation (radians) */
         obs_set.range   = range.w;      /* Range (kilometers)  */
 
         /* Range Rate (kilometers/second) */
-        obs_set.range_rate = PredictMath.Dot(range, rgvel) / range.w;
+        obs_set.range_rate = PredictMath.dot(range, rgvel) / range.w;
 
         /**
          * Corrections for atmospheric refraction

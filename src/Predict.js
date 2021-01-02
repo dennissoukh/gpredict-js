@@ -270,7 +270,7 @@ class Predict
         sat_sun_status = !Solar.SatEclipsed(sat.pos, solar_vector, eclipse_depth);
 
         if (sat_sun_status) {
-            let sun_el = Maths.Degrees(solar_set.el);
+            let sun_el = Maths.degrees(solar_set.el);
 
             if (sun_el <= this.threshold && sat.el >= 0.0) {
                 vis = this.SAT_VIS_VISIBLE;
@@ -390,7 +390,7 @@ class Predict
             this.sgpsdp.SGP4(sat, sat.tsince);
         }
 
-        Maths.ConvertSatState(sat.pos, sat.vel);
+        Maths.convertSatState(sat.pos, sat.vel);
 
         /* get the velocity of the satellite */
         sat.vel.w   = Math.sqrt(sat.vel.x * sat.vel.x + sat.vel.y * sat.vel.y + sat.vel.z * sat.vel.z);
@@ -407,16 +407,16 @@ class Predict
             sat_geodetic.lon -= Constants.twopi;
         }
 
-        sat.az          = Maths.Degrees(obs_set.az);
-        sat.el          = Maths.Degrees(obs_set.el);
+        sat.az          = Maths.degrees(obs_set.az);
+        sat.el          = Maths.degrees(obs_set.el);
         sat.range       = obs_set.range;
         sat.range_rate  = obs_set.range_rate;
-        sat.ssplat      = Maths.Degrees(sat_geodetic.lat);
-        sat.ssplon      = Maths.Degrees(sat_geodetic.lon);
+        sat.ssplat      = Maths.degrees(sat_geodetic.lat);
+        sat.ssplon      = Maths.degrees(sat_geodetic.lon);
         sat.alt         = sat_geodetic.alt;
-        sat.ma          = Maths.Degrees(sat.phase);
+        sat.ma          = Maths.degrees(sat.phase);
         sat.ma         *= 256.0 / 360.0;
-        sat.phase       = Maths.Degrees(sat.phase);
+        sat.phase       = Maths.degrees(sat.phase);
 
         /* same formulas, but the one from predict is nicer */
         //sat.footprint = 2.0 * xkmper * acos (xkmper/sat.pos.w);

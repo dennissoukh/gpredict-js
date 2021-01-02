@@ -8,7 +8,7 @@ class PredictTime
         let year, day;
 
         year    = Math.floor(epoch * 1e-3);
-        day     = PredictMath.Frac(epoch * 1e-3) * 1e3;
+        day     = PredictMath.frac(epoch * 1e-3) * 1e3;
 
         if (year < 57) {
             year = year + 2000;
@@ -47,7 +47,7 @@ class PredictTime
         let year, day, UT, jd, TU, GMST;
 
         year = Math.floor(epoch * 1e-3);
-        day = PredictMath.Frac(epoch * 1e-3, year) * 1e3;
+        day = PredictMath.frac(epoch * 1e-3, year) * 1e3;
 
         if (year < 57) {
             year += 2000;
@@ -55,25 +55,25 @@ class PredictTime
             year += 1900;
         }
 
-        UT = PredictMath.Frac(day);
+        UT = PredictMath.frac(day);
         jd = Math.floor(this.JulianDateOfYear(year) + day);
         TU = (jd - 2451545.0) / 36525;
         GMST = 24110.54841 + TU * (8640184.812866 + TU * (0.093104 - TU * 6.2E-6));
-        GMST = PredictMath.Modulus(GMST + Constants.secday * Constants.omega_E * UT, Constants.secday);
+        GMST = PredictMath.modulus(GMST + Constants.secday * Constants.omega_E * UT, Constants.secday);
         deep_arg.ds50 = jd - 2433281.5 + UT;
 
-        return PredictMath.FMod2p(6.3003880987 * deep_arg.ds50 + 1.72944494);
+        return PredictMath.fMod2p(6.3003880987 * deep_arg.ds50 + 1.72944494);
     }
 
     ThetaG_JD = (jd) =>
     {
         let UT, TU, GMST;
 
-        UT   = PredictMath.Frac(jd + 0.5);
+        UT   = PredictMath.frac(jd + 0.5);
         jd   = jd - UT;
         TU   = (jd - 2451545.0) / 36525;
         GMST = 24110.54841 + TU * (8640184.812866 + TU * (0.093104 - TU * 6.2e-6));
-        GMST = PredictMath.Modulus(GMST + Constants.secday * Constants.omega_E * UT, Constants.secday);
+        GMST = PredictMath.modulus(GMST + Constants.secday * Constants.omega_E * UT, Constants.secday);
 
         return Constants.twopi * GMST / Constants.secday;
     }

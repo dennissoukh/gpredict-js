@@ -65,7 +65,7 @@ let count = 0;
 
 expected.forEach(e => {
     sat.sgpsdp.SGP4(sat, e.step);
-    PredictMath.ConvertSatState(sat.pos, sat.vel);
+    PredictMath.convertSatState(sat.pos, sat.vel);
 
     data[count] = {
         step_time   : e.step,
@@ -115,5 +115,5 @@ expected.forEach(e => {
     };
 });
 
-console.log(`DEEP_SPACE_EPHEM: ${sat.flags & sgpsdp.DEEP_SPACE_EPHEM_FLAG} (expected: 0)`)
+console.log(`DEEP_SPACE_EPHEM: ${sat.flags & sat.sgpsdp.DEEP_SPACE_EPHEM_FLAG} (expected: 0)`)
 console.log(data);

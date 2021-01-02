@@ -150,7 +150,7 @@ class PredictSat
         }
 
         // Scale position and velocity to km and km/sec
-        PredictMath.ConvertSatState(sat.pos, sat.vel);
+        PredictMath.convertSatState(sat.pos, sat.vel);
 
         sat.vel.w   = Math.sqrt(sat.vel.x * sat.vel.x + sat.vel.y * sat.vel.y + sat.vel.z * sat.vel.z);
         sat.velo    = sat.vel.w;
@@ -166,14 +166,14 @@ class PredictSat
             sat_geodetic.lon -= Constants.twopi;
         }
 
-        sat.az = PredictMath.Degrees(obs_set.az);
-        sat.el = PredictMath.Degrees(obs_set.el);
+        sat.az = PredictMath.degrees(obs_set.az);
+        sat.el = PredictMath.degrees(obs_set.el);
         sat.range = obs_set.range;
         sat.range_rate = obs_set.range_rate;
-        sat.ssplat = PredictMath.Degrees(sat_geodetic.lat);
-        sat.ssplon = PredictMath.Degrees(sat_geodetic.lon);
+        sat.ssplat = PredictMath.degrees(sat_geodetic.lat);
+        sat.ssplon = PredictMath.degrees(sat_geodetic.lon);
         sat.alt = sat_geodetic.alt;
-        sat.ma = PredictMath.Degrees(sat.phase);
+        sat.ma = PredictMath.degrees(sat.phase);
         sat.ma *= 256.0 / 360.0;
         sat.footprint = 2.0 * Constants.xkmper * Math.acos(Constants.xkmper/sat.pos.w);
         let age = 0.0;
@@ -273,8 +273,8 @@ class PredictSat
         imag        = intrinsicMagnitudes[this.tle.catnr];
         observerGeo = new Geodetic();
 
-        observerGeo.lat = PredictMath.Radians(qth.lat);
-        observerGeo.lon = PredictMath.Radians(qth.lon);
+        observerGeo.lat = PredictMath.radians(qth.lat);
+        observerGeo.lon = PredictMath.radians(qth.lon);
         observerGeo.alt = qth.alt * 1000;
 
         observerPos = new Vector();
@@ -286,8 +286,8 @@ class PredictSat
 
         // Determine the solar phase and and thus the percent illumination
         observerSatPos = new Vector();
-        PredictMath.VecSub(this.pos, observerPos, observerSatPos);
-        phaseAngle  = PredictMath.Degrees(PredictMath.Angle(solarVector, observerSatPos));
+        PredictMath.vecSub(this.pos, observerPos, observerSatPos);
+        phaseAngle  = PredictMath.degrees(PredictMath.angle(solarVector, observerSatPos));
         illum       = phaseAngle / 180;
 
         illuminationChange              = illum / imag.illum;

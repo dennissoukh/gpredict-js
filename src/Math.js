@@ -1,158 +1,214 @@
 const Constants = require('./Constants');
 
-class PredictMath
-{
-    /* Returns sign of a float */
-    Sign = (arg) => {
-        return arg ? arg < 0 ? -1 : 1 : 0;
-    }
+/**
+ * Add vectors v1 and v2 to product v3
+ * @param {PredictVector} v1
+ * @param {PredictVector} v2
+ * @param {PredictVector} v3
+ */
+vecAdd = (v1, v2, v3) => {
+    v3.x = v1.x + v2.x;
+    v3.y = v1.y + v2.y;
+    v3.z = v1.z + v2.z;
 
-    /* Returns the arcsine of the argument */
-    ArcSin = (arg) => {
-        return Math.asin(arg);
-    }
+    v3.w = Math.sqrt(v3.x * v3.x + v3.y * v3.y + v3.z * v3.z);
+},
 
-    /* Returns arccosine of argument */
-    ArcCos = (arg) => {
-        return Math.acos(arg);
-    }
+/**
+ * Subtract vectors v2 from v1 to product vector v3
+ * @param {PredictVector} v1
+ * @param {PredictVector} v2
+ * @param {PredictVector} v3
+ */
+vecSub = (v1, v2, v3) => {
+    v3.x = v1.x - v2.x;
+    v3.y = v1.y - v2.y;
+    v3.z = v1.z - v2.z;
 
-    /* Adds vectors v1 and v2 together to produce v3 */
-    VecAdd = (v1, v2, v3) => {
-        v3.x = v1.x + v2.x;
-        v3.y = v1.y + v2.y;
-        v3.z = v1.z + v2.z;
+    v3.w = Math.sqrt(v3.x * v3.x + v3.y * v3.y + v3.z * v3.z);
+},
 
-        v3.w = Math.sqrt(v3.x * v3.x + v3.y * v3.y + v3.z * v3.z);
-    }
+/**
+ * Multiply vector v1 by scalar k to product vector v2
+ * @param {number} k
+ * @param {PredictVector} v1
+ * @param {PredictVector} v2
+ */
+scalarMultiply = (k, v1, v2) => {
+    v2.x = k * v1.x;
+    v2.y = k * v1.y;
+    v2.z = k * v1.z;
 
-    /* Subtracts vector v2 from v1 to produce v3 */
-    VecSub = (v1, v2, v3) => {
-        v3.x = v1.x - v2.x;
-        v3.y = v1.y - v2.y;
-        v3.z = v1.z - v2.z;
+    v2.w = Math.abs(k) * v1.w;
+},
 
-        v3.w = Math.sqrt(v3.x * v3.x + v3.y * v3.y + v3.z * v3.z)
-    }
+/**
+ * Multiply vector v1 by scalar k
+ * @param {number} k
+ * @param {PredictVector} v
+ */
+scaleVector = (k, v) => {
+    v.x *= k;
+    v.y *= k;
+    v.z *= k;
 
-    /* Multiplies the vector v1 by the scalar k to produce the vector v2 */
-    ScalarMultiply = (k, v1, v2) => {
-        v2.x = k * v1.x;
-        v2.y = k * v1.y;
-        v2.z = k * v1.z;
+    v.w = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+},
 
-        v2.w = Math.abs(k) * v1.w;
-    }
+/**
+ * Get dot product of vectors v1 and v2
+ * @param {PredictVector} v1
+ * @param {PredictVector} v2
+ * @return {number}
+ */
+dot = (v1, v2) => {
+    return (v1.x * v2.x + v1.y * v2.y + v1.z * v2.z);
+},
 
-    /* Multiplies the vector v1 by the scalar k */
-    ScaleVector = (k, v) => {
-        v.x *= k;
-        v.y *= k;
-        v.z *= k;
+/**
+ * Get angle between vectors v1 and v2
+ * @param {PredictVector} v1
+ * @param {PredictVector} v2
+ * @return {number}
+ */
+angle = (v1, v2) => {
+    v1.w = Math.sqrt(v1.x * v1.x + v1.y * v1.y + v1.z * v1.z);
+    v2.w = Math.sqrt(v2.x * v2.x + v2.y * v2.y + v2.z * v2.z);
 
-        v.w = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-    }
+    return (Math.acos(dot(v1, v2) / (v1.w * v2.w)));
+},
 
-    /* Returns the dot product of two vectors */
-    Dot = (v1, v2) => {
-        return (v1.x * v2.x + v1.y * v2.y + v1.z * v2.z);
-    }
+/**
+ * Get cross product of vectors v1 and v2 to product vector v3
+ * @param {PredictVector} v1
+ * @param {PredictVector} v2
+ * @param {PredictVector} v3
+ */
+cross = (v1, v2, v3) => {
+    v3.x = v1.y * v2.z - v1.z * v2.y;
+    v3.y = v1.z * v2.x - v1.x * v2.z;
+    v3.z = v1.x * v2.y - v1.y * v2.x;
 
-    /* Calculates the angle between vectors v1 and v2 */
-    Angle = (v1, v2) => {
-        v1.w = Math.sqrt(v1.x * v1.x + v1.y * v1.y + v1.z * v1.z);
-        v2.w = Math.sqrt(v2.x * v2.x + v2.y * v2.y + v2.z * v2.z);
+    v3.w = Math.sqrt(v3.x * v3.x + v3.y * v3.y + v3.z * v3.z);
+},
 
-        return (this.ArcCos(this.Dot(v1, v2) / (v1.w * v2.w)));
-    }
+/**
+ * Normalize vector v
+ * @param {PredictVector} v
+ */
+normalize = (v) => {
+    v.x /= v.w;
+    v.y /= v.w;
+    v.z /= v.w;
+},
 
-    /* Produces cross product of v1 and v2, and returns in v3 */
-    Cross = (v1, v2, v3) => {
-        v3.x = v1.y * v2.z - v1.z * v2.y;
-        v3.y = v1.z * v2.x - v1.x * v2.z;
-        v3.z = v1.x * v2.y - v1.y * v2.x;
-
-        v3.w = Math.sqrt(v3.x * v3.x + v3.y * v3.y + v3.z * v3.z)
-    }
-
-    /* Normalizes a vector */
-    Normalize = (v) => {
-        v.x /= v.w;
-        v.y /= v.w;
-        v.z /= v.w;
-    }
-
-    /* Four-quadrant arctan function */
-    AcTan = (sinx, cosx) => {
-        if (cosx === 0) {
+/**
+ * Four-quadrant arctan function
+ * @param {number} sinx
+ * @param {number} cosx
+ * @return {number}
+ */
+acTan = (sinx, cosx) => {
+    if (cosx === 0) {
+        if (sinx > 0) {
+            return Constants.pio2;
+        } else {
+            return Constants.x3pio2;
+        }
+    } else {
+        if (cosx > 0) {
             if (sinx > 0) {
-                return Constants.pio2;
+                return Math.atan(sinx / cosx);
             } else {
-                return Constants.x3pio2;
+                return Constants.twopi + Math.atan(sinx / cosx);
             }
         } else {
-            if (cosx > 0) {
-                if (sinx > 0) {
-                    return Math.atan(sinx / cosx);
-                } else {
-                    return Constants.twopi + Math.atan(sinx / cosx);
-                }
-            } else {
-                return Constants.pi + Math.atan(sinx / cosx);
-            }
+            return Constants.pi + Math.atan(sinx / cosx);
         }
     }
+},
 
-    /* Returns mod 2pi of argument */
-    FMod2p = (x) => {
-        let i, ret_val;
+/**
+ * Modulo 2pi of argument
+ * @param {number} arg
+ * @return {number}
+ */
+fMod2p = (arg) => {
+    let ret_val;
+    ret_val  = arg;
 
-        ret_val  = x;
-        i        = Math.floor((ret_val / Constants.twopi));
-        ret_val -= i * Constants.twopi;
+    const i  = Math.floor((ret_val / Constants.twopi));
+    ret_val -= i * Constants.twopi;
 
-        if (ret_val < 0) {
-            ret_val += Constants.twopi;
-        }
-
-        return ret_val;
+    if (ret_val < 0) {
+        ret_val += Constants.twopi;
     }
 
-    /* Returns arg1 mod arg2 */
-    Modulus = (arg1, arg2) => {
-        return (arg1 % arg2);
-    }
+    return ret_val;
+},
 
-    /* Returns fractional part of double argument */
-    Frac = (arg) => {
-        return (arg - Math.floor(arg));
-    }
+/**
+ * arg1 mod arg2
+ * @param {number} arg1
+ * @param {number} arg2
+ * @return {number}
+ */
+modulus = (arg1, arg2) => {
+    return (arg1 % arg2);
+},
 
-    /* Converts the satellite's position and velocity  */
-    /* vectors from normalised values to km and km/sec */
-    ConvertSatState = (pos, vel) => {
-        this.ScaleVector(Constants.xkmper, pos);
-        this.ScaleVector(Constants.xkmper * Constants.xmnpda / Constants.secday, vel);
-    }
+/**
+ * Fractional part of argument
+ * @param {number} arg
+ * @return {number}
+ */
+frac = (arg) => {
+    return (arg - Math.floor(arg));
+},
 
-    /* Returns angle in radians from arg in degrees */
-    Radians = (arg) => {
-        return arg * Constants.de2ra;
-    }
+/**
+ * Convert satellite's position and velocity vectors from
+ * normalised values to km and km/sec
+ * @param {PredictVector} pos
+ * @param {PredictVector} vel
+ */
+convertSatState = (pos, vel) => {
+    scaleVector(Constants.xkmper, pos);
+    scaleVector(Constants.xkmper * Constants.xmnpda / Constants.secday, vel);
+},
 
-    /* Returns angle in degrees from arg in rads */
-    Degrees = (arg) => {
-        return arg / Constants.de2ra;
-    }
+/**
+ * Angle in radians from arg in degrees
+ * @param {number} arg
+ * @return {number}
+ */
+radians = (arg) => {
+    return arg * Constants.de2ra;
+},
 
-    Fmod = (a, b) => {
-        return Number((a - (Math.floor(a / b) * b)).toPrecision(8));
-    }
+/**
+ * Angle in degrees from arg in rads
+ * @param {number} arg
+ * @return {number}
+ */
+degrees = (arg) => {
+    return arg / Constants.de2ra;
+};
 
-    /* Returns fractional part of double argument */
-    Frac = (arg) => {
-        return (arg - Math.floor(arg));
-    }
-}
-
-module.exports = new PredictMath;
+module.exports = {
+    vecAdd,
+    vecSub,
+    scalarMultiply,
+    scaleVector,
+    dot,
+    angle,
+    cross,
+    normalize,
+    acTan,
+    fMod2p,
+    modulus,
+    frac,
+    convertSatState,
+    radians,
+    degrees,
+};

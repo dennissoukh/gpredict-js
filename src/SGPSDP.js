@@ -209,7 +209,7 @@ class PredictSGPSDP
         ayn = e * Math.sin(omega) + aynl;
 
         /* Solve Kepler's' Equation */
-        capu = PredictMath.FMod2p(xlt - xnode);
+        capu = PredictMath.fMod2p(xlt - xnode);
         temp2 = capu;
 
         do {
@@ -242,7 +242,7 @@ class PredictSGPSDP
         temp3 = 1.0 / (1.0 + betal);
         cosu = temp2 * (cosepw - axn + ayn * esine * temp3);
         sinu = temp2 * (sinepw - ayn - axn * esine * temp3);
-        u = PredictMath.AcTan(sinu, cosu);
+        u = PredictMath.acTan(sinu, cosu);
         sin2u = 2.0 * sinu * cosu;
         cos2u = 2.0 * cosu * cosu - 1.0;
         temp = 1.0 / pl;
@@ -287,7 +287,7 @@ class PredictSGPSDP
             sat.phase += Constants.twopi;
         }
 
-        sat.phase = PredictMath.FMod2p(sat.phase);
+        sat.phase = PredictMath.fMod2p(sat.phase);
 
         sat.tle.omegao1 = omega;
         sat.tle.xincl1  = xinck;
@@ -447,7 +447,7 @@ class PredictSGPSDP
         ayn = sat.deep_arg.em * Math.sin(sat.deep_arg.omgadf) + aynl;
 
         /* Solve Kepler's Equation */
-        capu = PredictMath.FMod2p(xlt - sat.deep_arg.xnode);
+        capu = PredictMath.fMod2p(xlt - sat.deep_arg.xnode);
         temp2 = capu;
 
         i = 0;
@@ -480,7 +480,7 @@ class PredictSGPSDP
         temp3 = 1.0 / (1.0 + betal);
         cosu = temp2 * (cosepw - axn + ayn * esine * temp3);
         sinu = temp2 * (sinepw - ayn - axn * esine * temp3);
-        u = PredictMath.AcTan(sinu, cosu);
+        u = PredictMath.acTan(sinu, cosu);
         sin2u = 2.0 * sinu * cosu;
         cos2u = 2.0 * cosu * cosu - 1.0;
         temp = 1.0 / pl;
@@ -527,7 +527,7 @@ class PredictSGPSDP
         if (sat.phase < 0.0) {
             sat.phase += Constants.twopi;
         }
-        sat.phase = PredictMath.FMod2p(sat.phase);
+        sat.phase = PredictMath.fMod2p(sat.phase);
 
         sat.tle.omegao1 = sat.deep_arg.omgadf;
         sat.tle.xincl1  = sat.deep_arg.xinc;
@@ -580,15 +580,15 @@ class PredictSGPSDP
                     sat.dps.zcoshl = Math.sqrt(1.0 - sat.dps.zsinhl * sat.dps.zsinhl);
                     c = 4.7199672 + 0.22997150 * day;
                     gam = 5.8351514 + 0.0019443680 * day;
-                    sat.dps.zmol = PredictMath.FMod2p(c - gam);
+                    sat.dps.zmol = PredictMath.fMod2p(c - gam);
                     zx = 0.39785416 * stem / sat.dps.zsinil;
                     zy = sat.dps.zcoshl * ctem + 0.91744867 * sat.dps.zsinhl * stem;
-                    zx = PredictMath.AcTan(zx, zy);
+                    zx = PredictMath.acTan(zx, zy);
                     zx = gam + zx - xnodce;
                     sat.dps.zcosgl = Math.cos(zx);
                     sat.dps.zsingl = Math.sin(zx);
                     sat.dps.zmos = 6.2565837 + 0.017201977 * day;
-                    sat.dps.zmos = PredictMath.FMod2p(sat.dps.zmos);
+                    sat.dps.zmos = PredictMath.fMod2p(sat.dps.zmos);
                 } /* End if(day != preep) */
 
                 /* Do solar terms */
@@ -1027,12 +1027,12 @@ class PredictSGPSDP
                     dbet = -ph * sinok + sat.dps.pinc * cosis * cosok;
                     alfdp = alfdp + dalf;
                     betdp = betdp + dbet;
-                    sat.deep_arg.xnode = PredictMath.FMod2p(sat.deep_arg.xnode);
+                    sat.deep_arg.xnode = PredictMath.fMod2p(sat.deep_arg.xnode);
                     xls = sat.deep_arg.xll + sat.deep_arg.omgadf + cosis * sat.deep_arg.xnode;
                     dls = sat.dps.pl + pgh - sat.dps.pinc * sat.deep_arg.xnode * sinis;
                     xls = xls + dls;
                     xnoh = sat.deep_arg.xnode;
-                    sat.deep_arg.xnode = PredictMath.AcTan(alfdp, betdp);
+                    sat.deep_arg.xnode = PredictMath.acTan(alfdp, betdp);
 
                     /* This is a patch to Lyddane modification */
                     /* suggested by Rob Matson. */

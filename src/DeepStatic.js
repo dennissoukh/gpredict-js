@@ -1,5 +1,8 @@
-class DeepStatic
-{
+/**
+ * Static data for Deep().
+ * Port of deep_static_t struct from sgp4sdp4.h.
+ */
+class DeepStatic {
     thgr;
     xnq;
     xqncl;

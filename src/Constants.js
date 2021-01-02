@@ -1,4 +1,4 @@
-let Constants =
+const Constants =
 {
     de2ra    :  1.74532925e-2,   /* Degrees to Radians */
     pi       :  3.1415926535898, /* Pi */
@@ -53,7 +53,7 @@ let Constants =
     rho      :  1.5696615e-1,
     mfactor  :  7.292115e-5,
     __sr__   :  6.96000e5,      /* Solar radius - kilometers (IAU 76) */
-    AU       :  1.49597870e8    /* Astronomical unit - kilometers (IAU 76) */
-}
+    AU       :  1.49597870e8,   /* Astronomical unit - kilometers (IAU 76) */
+};
 
-module.exports = Object.freeze(Constants)
+module.exports = Object.freeze(Constants);
