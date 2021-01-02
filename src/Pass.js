@@ -1,5 +1,7 @@
-class PredictPass
-{
+/**
+ * Brief satellite pass information.
+ */
+class PredictPass {
     satname;                        /* satellite name */
     aos;                            /* AOS time in "jul_utc" */
     tca;                            /* TCA time in "jul_utc" */
@@ -10,8 +12,8 @@ class PredictPass
     orbit;                          /* Orbit number */
     maxel_az;                       /* Azimuth at maximum elevation */
     vis;                            /* Visibility string, e.g. VSE, -S-, V-- */
-    details = new Array();          /* List of pass_detail_t entries */
-    max_apparent_magnitude = null;  /* Maximum apparent magnitude, experimental */
+    details = [];                   /* List of pass_detail_t entries */
+    max_apparent_magnitude = null;  /* Maximum apparent magnitude */
 }
 
-module.exports = PredictPass
+module.exports = PredictPass;

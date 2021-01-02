@@ -21,11 +21,11 @@ const satTle  = {
 tle = new PredictTLE(satTle.line0, satTle.line1, satTle.line2);
 
 let sat = new PredictSat(tle),
-    now = PredictTime.GetCurrentJulianTimestamp();
+    now = PredictTime.getCurrentJulianTimestamp();
 
 let results     = predict.getPasses(sat, qth, now, 1, 10),
     filtered    = predict.filterVisiblePasses(results);
 
 filtered.forEach(pass => {
-    console.log(PredictTime.DayNumberToReadable(pass.visible_aos), PredictTime.DayNumberToReadable(pass.visible_tca), PredictTime.DayNumberToReadable(pass.visible_los))
+    console.log(PredictTime.dayNumberToReadable(pass.visible_aos), PredictTime.dayNumberToReadable(pass.visible_tca), PredictTime.dayNumberToReadable(pass.visible_los))
 });

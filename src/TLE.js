@@ -1,37 +1,44 @@
-class PredictTLE
-{
+/**
+ * Process the satellite's TLE
+ */
+class PredictTLE {
     header;
     line1;
     line2;
-    epoch;      /*!< Epoch Time in NORAD TLE format YYDDD.FFFFFFFF */
-    epoch_year; /*!< Epoch: year */
-    epoch_day;  /*!< Epoch: day of year */
-    epoch_fod;  /*!< Epoch: Fraction of day. */
-    xndt2o;     /*!< 1. time derivative of mean motion */
-    xndd6o;     /*!< 2. time derivative of mean motion */
-    bstar;      /*!< Bstar drag coefficient. */
-    xincl;      /*!< Inclination */
-    xnodeo;     /*!< R.A.A.N. */
-    eo;         /*!< Eccentricity */
-    omegao;     /*!< argument of perigee */
-    xmo;        /*!< mean anomaly */
-    xno;        /*!< mean motion */
+    epoch;      /* Epoch Time in NORAD TLE format YYDDD.FFFFFFFF */
+    epoch_year; /* Epoch: year */
+    epoch_day;  /* Epoch: day of year */
+    epoch_fod;  /* Epoch: Fraction of day. */
+    xndt2o;     /* 1. time derivative of mean motion */
+    xndd6o;     /* 2. time derivative of mean motion */
+    bstar;      /* Bstar drag coefficient. */
+    xincl;      /* Inclination */
+    xnodeo;     /* R.A.A.N. */
+    eo;         /* Eccentricity */
+    omegao;     /* argument of perigee */
+    xmo;        /* mean anomaly */
+    xno;        /* mean motion */
 
-    catnr;      /*!< Catalogue Number.  */
-    elset;      /*!< Element Set number. */
-    revnum;     /*!< Revolution Number at epoch. */
+    catnr;      /* Catalogue Number.  */
+    elset;      /* Element Set number. */
+    revnum;     /* Revolution Number at epoch. */
 
-    sat_name;   /*!< Satellite name string. */
-    idesg;      /*!< International Designator. */
-    status;     /*!< Operational status. */
+    sat_name;   /* Satellite name string. */
+    idesg;      /* International Designator. */
+    status;     /* Operational status. */
 
     /* values needed for squint calculations */
     xincl1;
     xnodeo1;
     omegao1;
 
-    constructor(header, line1, line2)
-    {
+    /**
+     * Constructor for class TLE.
+     * @param {string} header
+     * @param {string} line1
+     * @param {string} line2
+     */
+    constructor(header, line1, line2) {
         this.header = header;     /* Header line of TLE file */
         this.line1  = line1;      /* Line 1 of TLE */
         this.line2  = line2;      /* Line 2 of TLE */
@@ -46,8 +53,8 @@ class PredictTLE
         /* International Designator for satellite */
         this.idesg = this.line1.substr(9, 8).trim();
 
-        /* Epoch time; this is the complete, unconverted epoch. */
-        /* Replace spaces with 0 before casting, as leading spaces are allowed */
+        /* Epoch time; this is the complete, unconverted epoch */
+        /* Replace spaces with 0 before casting */
         this.epoch = Number(this.line1.substr(18, 14).replace(' ', '0'));
 
         /* Now, convert the epoch time into year, day
@@ -73,10 +80,16 @@ class PredictTLE
         this.xndt2o = Number(line1.substr(33, 10));
 
         /* Satellite's Second Time Derivative */
-        this.xndd6o = Number(line1.substr(44, 1) + '.' + line1.substr(45, 5) + 'E' + line1.substr(50, 2));
+        this.xndd6o = Number(line1.substr(44, 1) + '.' +
+            line1.substr(45, 5) + 'E' +
+            line1.substr(50, 2),
+        );
 
         /* Satellite's bstar drag term */
-        this.bstar = Number(line1.substr(53, 1) + '.' + line1.substr(54, 5) + 'E' + line1.substr(59, 2));
+        this.bstar = Number(line1.substr(53, 1) + '.' +
+            line1.substr(54, 5) + 'E' +
+            line1.substr(59, 2),
+        );
 
         /* Element Number */
         this.elset = Number(line1.substr(64, 4));
@@ -106,21 +119,21 @@ class PredictTLE
         this.sat_name = this.header;
     }
 
-    /* Calculates the checksum mod 10 of a line from a TLE set and */
-    /* returns true if it compares with checksum in column 68, else false.*/
-    /* tle_set is a character string holding the two lines read    */
-    /* from a text file containing NASA format Keplerian elements. */
-    /* NOTE!!! The stuff about two lines is not quite true.
-       The function assumes that tle_set[0] is the beginning
-       of the line and that there are 68 elements - see the consumer
-    */
+    /**
+     * Calculates the checksum mod 10 of a line from a TLE set and
+     * returns true if it compares with checksum in column 68, else false.
+     * tleSet is a character string holding the two lined element set.
+     *
+     * @param {string} tleSet
+     * @return {boolean}
+     */
     checkChecksum = (tleSet) => {
         if (tleSet.length < 69) {
             return false;
         }
 
-        let checksum = 0,
-            value;
+        let checksum = 0;
+        let value;
 
         for (let i = 0; i < 68; i++) {
             if ((tleSet.charAt(i) >= '0') && (tleSet.charAt(i) <= '9')) {
@@ -135,16 +148,22 @@ class PredictTLE
         }
 
         checksum %= 10;
-        let check_digit = tleSet.charAt(68) - '0';
+        const check_digit = tleSet.charAt(68) - '0';
 
         return checksum === check_digit;
     }
 
 
-    /* Converts the strings in a raw two-line element set  */
-    /* to their intended numerical values. No processing   */
-    /* of these values is done, e.g. from deg to rads etc. */
-    /* This is done in the select_ephemeris() function.    */
+    /**
+     * Converts the strings in a raw two-line element set to
+     * their intended numerical values. No processing of these
+     * values is done, e.g. from deg to rads etc. This is done
+     * in the select_ephemeris() function.
+     *
+     * @param {string} line1
+     * @param {string} line2
+     * @return {boolean}
+     */
     checkElements = (line1, line2) => {
         if (!this.checkChecksum(line1) || !this.checkChecksum(line2)) {
             return false;
@@ -177,18 +196,18 @@ class PredictTLE
      * A function to allow checksum creation of a line.  This is driven by
      * the fact that some TLEs from SpaceTrack are missing checksum numbers.
      * You can use this to create a checksum for a line, but you should
-     * probably have confidence that the TLE data itself is good.  YMMV.
+     * probably have confidence that the TLE data itself is good.
      *
-     * @throws Predict_Exception if the line is not exactly 68 chars
-     * @return number
+     * @param {string} line
+     * @return {number}
      */
     createChecksum = (line) => {
         if (line.length !== 68) {
             throw new Error('Invalid line, needs to be 68 chars');
         }
 
-        let checksum = 0,
-            value;
+        let checksum = 0;
+        let value;
 
         for (let i = 0; i < 68; i++) {
             if ((line.charAt(i) >= '0') && (line.charAt(i) <= '9')) {
@@ -208,4 +227,4 @@ class PredictTLE
     }
 }
 
-module.exports = PredictTLE
+module.exports = PredictTLE;

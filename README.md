@@ -4,7 +4,7 @@ A partial JavaScript fork of [gpredict](https://github.com/csete/gpredict): an a
 
 ## Usage
 
-Examples are available in the examples folder.
+Examples are available in the examples folder. You can run these using Node.
 
 ## License
 

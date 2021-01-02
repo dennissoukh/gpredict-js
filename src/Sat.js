@@ -125,7 +125,7 @@ class PredictSat
         let obs_geodetic    = new Geodetic(),
             obs_set         = new ObsSet(),
             sat_geodetic    = new Geodetic(),
-            jul_utc         = Time.JulianDateOfEpoch(sat.tle.epoch);
+            jul_utc         = Time.julianDateOfEpoch(sat.tle.epoch);
 
         sat.jul_epoch       = jul_utc;
 
@@ -155,8 +155,8 @@ class PredictSat
         sat.vel.w   = Math.sqrt(sat.vel.x * sat.vel.x + sat.vel.y * sat.vel.y + sat.vel.z * sat.vel.z);
         sat.velo    = sat.vel.w;
 
-        SGPObs.CalculateObs(jul_utc, sat.pos, sat.vel, obs_geodetic, obs_set);
-        SGPObs.CalculateLatLonAlt(jul_utc, sat.pos, sat_geodetic);
+        SGPObs.calculateObs(jul_utc, sat.pos, sat.vel, obs_geodetic, obs_set);
+        SGPObs.calculateLatLonAlt(jul_utc, sat.pos, sat_geodetic);
 
         while (sat_geodetic.lon < -Constants.pi) {
             sat_geodetic.lon += Constants.twopi;
@@ -281,8 +281,8 @@ class PredictSat
         observerVel = new Vector();
         solarVector = new Vector();
 
-        Solar.CalculateSolarPosition(time, solarVector);
-        SGPObs.CalculateUserPosVel(time, observerGeo, observerPos, observerVel);
+        Solar.calculateSolarPosition(time, solarVector);
+        SGPObs.calculateUserPosVel(time, observerGeo, observerPos, observerVel);
 
         // Determine the solar phase and and thus the percent illumination
         observerSatPos = new Vector();

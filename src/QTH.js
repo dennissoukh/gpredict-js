@@ -1,5 +1,7 @@
-class PredictQTH
-{
+/**
+ * Information about the observer's location.
+ */
+class PredictQTH {
     name;   /* Name, eg. callsign. */
     loc;    /* Location, eg City, Country. */
     desc;   /* Short description. */
@@ -12,4 +14,4 @@ class PredictQTH
     data;   /* Raw data from cfg file. */
 }
 
-module.exports = PredictQTH
+module.exports = PredictQTH;

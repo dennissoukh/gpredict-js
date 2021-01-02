@@ -555,7 +555,7 @@ class PredictSGPSDP
 
         switch (ientry) {
             case this.dpinit : /* Entrance for deep space initialization */
-                sat.dps.thgr = Time.ThetaG(sat.tle.epoch, sat.deep_arg);
+                sat.dps.thgr = Time.thetaG(sat.tle.epoch, sat.deep_arg);
                 eq = sat.tle.eo;
                 sat.dps.xnq = sat.deep_arg.xnodp;
                 aqnv = 1.0 / sat.deep_arg.aodp;

@@ -48,7 +48,7 @@ class Predict
      */
     getNextPass = (sat, qth, maxdt) =>
     {
-        const now = Time.GetCurrentDayNumber();
+        const now = Time.getCurrentDayNumber();
         return this.getPass(sat, qth, now, maxdt);
     }
 
@@ -263,11 +263,11 @@ class Predict
         obs_geodetic.alt   = qth.alt / 1000.0;
         obs_geodetic.theta = 0;
 
-        Solar.CalculateSolarPosition(jul_utc, solar_vector);
-        SGPObs.CalculateObs(jul_utc, solar_vector, zero_vector, obs_geodetic, solar_set);
+        Solar.calculateSolarPosition(jul_utc, solar_vector);
+        SGPObs.calculateObs(jul_utc, solar_vector, zero_vector, obs_geodetic, solar_set);
 
         let sat_sun_status, vis;
-        sat_sun_status = !Solar.SatEclipsed(sat.pos, solar_vector, eclipse_depth);
+        sat_sun_status = !Solar.satEclipsed(sat.pos, solar_vector, eclipse_depth);
 
         if (sat_sun_status) {
             let sun_el = Maths.degrees(solar_set.el);
@@ -396,8 +396,8 @@ class Predict
         sat.vel.w   = Math.sqrt(sat.vel.x * sat.vel.x + sat.vel.y * sat.vel.y + sat.vel.z * sat.vel.z);
         sat.velo    = sat.vel.w;
 
-        SGPObs.CalculateObs(sat.jul_utc, sat.pos, sat.vel, obs_geodetic, obs_set);
-        SGPObs.CalculateLatLonAlt(sat.jul_utc, sat.pos, sat_geodetic);
+        SGPObs.calculateObs(sat.jul_utc, sat.pos, sat.vel, obs_geodetic, obs_set);
+        SGPObs.calculateLatLonAlt(sat.jul_utc, sat.pos, sat_geodetic);
 
         while (sat_geodetic.lon < -Constants.pi) {
             sat_geodetic.lon += Constants.twopi;

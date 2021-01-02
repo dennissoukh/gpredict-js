@@ -11,5 +11,6 @@ rules: {
   indent: [error, 4],
   key-spacing: off,
   no-multi-spaces: off,
-  camelcase: off
+  camelcase: off,
+  no-invalid-this: off
 }

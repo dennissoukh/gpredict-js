@@ -1,9 +1,10 @@
-class Utils
-{
-    replaceAt = (string, index, replacement) =>
-    {
-        return string.substr(0, index) + replacement + string.substr(index + replacement.length);
-    }
-}
+replaceAt = (string, index, replacement) => {
+    const newString = string.substr(0, index) +
+    replacement + string.substr(index + replacement.length);
 
-module.exports = new Utils;
+    return newString;
+};
+
+module.exports = {
+    replaceAt,
+};
