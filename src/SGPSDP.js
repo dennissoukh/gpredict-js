@@ -45,7 +45,7 @@ class PredictSGPSDP
      * are vector_t structures returning ECI satellite position and
      * velocity. Use Convert_Sat_State() to convert to km and km/s.
      */
-    SGP4 = (sat, tsince) =>
+    sgp4 = (sat, tsince) =>
     {
         let a1, theta2, eosq, betao, betao2, del1, ao, delo, s4, qoms24, perigee,
             pinvsq, tsi, etasq, eeta, psisq, coef, coef1, c2, a3ovk2, c3, theta4,
@@ -302,7 +302,7 @@ class PredictSGPSDP
      * vector_t structures returning ECI satellite position and
      * velocity. User Convert_Sat_State() to convert to km and km/s
      */
-    SDP4 = (sat, tsince) =>
+    sdp4 = (sat, tsince) =>
     {
         let a1, del1, ao, delo, s4, qoms24, perigee, pinvsq, tsi,
             eta, etasq, eeta, psisq, coef, coef1, c2, a3ovk2, theta4,

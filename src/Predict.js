@@ -1,8 +1,4 @@
 const Vector        = require('./Vector');
-const SGSDPStatic   = require('./SGSDPStatic');
-const DeepArg       = require('./DeepArg');
-const DeepStatic    = require('./DeepStatic');
-const SGPSDP        = require('./SGPSDP');
 const Geodetic      = require('./Geodetic');
 const ObsSet        = require('./ObsSet');
 const Time          = require('./Time');
@@ -14,8 +10,10 @@ const PassDetail    = require('./PassDetail');
 const Constants     = require('./Constants');
 const Utils         = require('./Utils');
 
-class Predict
-{
+/**
+ * The main Predict class.
+ */
+class Predict {
     /* visibility constants */
     SAT_VIS_NONE     = 0;
     SAT_VIS_VISIBLE  = 1;
@@ -28,73 +26,53 @@ class Predict
     numEntries      = 20;   // Pass details: number of entries
     threshold       = -6;   // Twilight threshold
 
-    sgpsdp          = new SGPSDP();
-
-    testTime        = 2459215.623526;
-
     /**
-     *  Predict the next pass.
-     *
-     * This function simply wraps the get_pass function using the current time
-     * as parameter.
-     *
-     * Note: the data in sat will be corrupt (future) and must be refreshed
-     *       by the caller, if the caller will need it later on (eg. if the caller
-     *       is GtkSatList).
-     *
-     *
-     * @return Predict_Pass Pointer instance or NULL if no pass can be
-     *         found.
+     * Predict the next pass.
+     * @param {PredictSat}  sat     Satellite data
+     * @param {PredictQTH}  qth     QTH Data
+     * @param {number}      maxdt   Period of time to calculate passes for
+     * @return {PredictPass|null}
      */
-    getNextPass = (sat, qth, maxdt) =>
-    {
+    getNextPass = (sat, qth, maxdt) => {
         const now = Time.getCurrentDayNumber();
         return this.getPass(sat, qth, now, maxdt);
     }
 
-    /** Predict first pass after a certain time.
+    /**
+     * Predict first pass after a certain time. This function will find the
+     * first upcoming pass with AOS no earlier than t = start and no later than
+     * t = (start + maxdt). For no time limit use maxdt = 0.0.
      *
-     *  @return Predict_Pass or NULL if there was an error.
-     *
-     * This function will find the first upcoming pass with AOS no earlier than
-     * t = start and no later than t = (start+maxdt).
-     *
-     *  note For no time limit use maxdt = 0.0
-     *
-     *  note the data in sat will be corrupt (future) and must be refreshed
-     *       by the caller, if the caller will need it later on
+     * @param {PredictSat}  sat_in  Satellite
+     * @param {PredictQTH}  qth     QTH Data
+     * @param {number}      start   Start Time
+     * @param {number}      maxdt   Period of time to calculate passes for
+     * @return {PredictPass|null}
      */
-    getPass = (sat_in, qth, start, maxdt) =>
-    {
-        let aos     = 0.0,      /* time of AOS */
-            tca     = 0.0,      /* time of TCA */
-            los     = 0.0,      /* time of LOS */
-            dt      = 0.0,      /* time diff */
-            step    = 0.0,      /* time step */
-            t0      = start,
-            tres    = 0.0,      /* required time resolution */
-            max_el  = 0.0,      /* maximum elevation */
-            pass    = null,
-            detail  = null,
-            done    = false,
-            iter    = 0;        /* number of iterations */
+    getPass = (sat_in, qth, start, maxdt) => {
+        let aos     = 0.0;      /* time of AOS */
+        let tca     = 0.0;      /* time of TCA */
+        let los     = 0.0;      /* time of LOS */
+        let dt      = 0.0;      /* time diff */
+        let step    = 0.0;      /* time step */
+        let t0      = start;
+        let tres    = 0.0;      /* required time resolution */
+        let max_el  = 0.0;      /* maximum elevation */
+        let pass    = null;
+        let detail  = null;
+        let done    = false;
 
-        /* FIXME: watchdog */
+        // Copy sat to a working structure
+        const sat         = sat_in;
 
-        /*copy sat_in to a working structure*/
-        let sat         = sat_in,
-            sat_working = sat_in;
-
-        /* get time resolution; sat-cfg stores it in seconds */
+        // Get time resolution in seconds
         tres            = this.timeRes / 86400.0;
 
-        /* loop until we find a pass with elevation > SAT_CFG_INT_PRED_MIN_EL
-            or we run out of time
-            FIXME: we should have a safety break
-        */
+        // Loop until pass found with elevation > selected min elevation
         while (!done) {
-            /* Find los of next pass or of current pass */
-            los         = this.findLos(sat, qth, t0, maxdt); // See if a pass is ongoing
+            // Find los of next pass or of current pass
+            // See if a pass is ongoing
+            los         = this.findLos(sat, qth, t0, maxdt);
             aos         = this.findAos(sat, qth, t0, maxdt);
 
             if (aos > los) {
@@ -102,29 +80,23 @@ class Predict
                 aos = this.findPrevAos(sat, qth, t0);
             }
 
-            /* aos = 0.0 means no aos */
+            // aos = 0.0 means no aos
             if (aos === 0.0) {
                 done = true;
             } else if ((maxdt > 0.0) && (aos > (start + maxdt)) ) {
-                /* check whether we are within time limits;
-                    maxdt = 0 mean no time limit.
-                */
+                // Check if within time limits; maxdt = 0.0 means no limit
                 done = true;
             } else {
-                //los = findLos (sat, qth, aos + 0.001, maxdt); // +1.5 min later
                 dt = los - aos;
 
-                /* get time step, which will give us the max number of entries */
+                // Get time step, which will give the max number of entries
                 step = dt / this.numEntries;
 
-                /* but if this is smaller than the required resolution
-                    we go with the resolution
-                */
+                // If step is smaller than resolution, go with resolution
                 if (step < tres) {
                     step = tres;
                 }
 
-                /* create a pass_t entry; FIXME: g_try_new in 2.8 */
                 pass = new Pass();
 
                 pass.aos      = aos;
@@ -137,21 +109,18 @@ class Predict
                 pass.satname  = sat.nickname;
                 pass.details  = [];
 
-                /* iterate over each time step */
+                // Iterate over each time stemp
                 for (let t = pass.aos; t <= pass.los; t += step) {
-
-                    /* calculate satellite data */
+                    // Calculate satellite data
                     this.predictCalc(sat, qth, t);
 
-                    /* in the first iter we want to store
-                        pass.aos_az
-                    */
+                   // In the first iter, store pass.aos_az
                     if (t === pass.aos) {
                         pass.aos_az = sat.az;
                         pass.orbit  = sat.orbit;
                     }
 
-                    /* append details to sat.details */
+                    // Append details to sat.details
                     detail              = new PassDetail();
                     detail.time         = t;
                     detail.pos.x        = sat.pos.x;
@@ -176,54 +145,49 @@ class Predict
                     detail.orbit        = sat.orbit;
                     detail.vis          = this.getSatVis(sat, qth, t);
 
-                    /* also store visibility "bit" */
+                    // Store visibility character
                     switch (detail.vis) {
-                        case this.SAT_VIS_VISIBLE:
-                            pass.vis = Utils.replaceAt(pass.vis, 0, 'V');
-                            break;
-                        case this.SAT_VIS_DAYLIGHT:
-                            pass.vis = Utils.replaceAt(pass.vis, 1, 'D');
-                            break;
-                        case this.SAT_VIS_ECLIPSED:
-                            pass.vis = Utils.replaceAt(pass.vis, 2, 'E');
-                            break;
-                        default:
-                            break;
+                    case this.SAT_VIS_VISIBLE:
+                        pass.vis = Utils.replaceAt(pass.vis, 0, 'V');
+                        break;
+                    case this.SAT_VIS_DAYLIGHT:
+                        pass.vis = Utils.replaceAt(pass.vis, 1, 'D');
+                        break;
+                    case this.SAT_VIS_ECLIPSED:
+                        pass.vis = Utils.replaceAt(pass.vis, 2, 'E');
+                        break;
+                    default:
+                        break;
                     }
 
-                    // Using an array, no need to prepend and reverse the list
-                    // as gpredict does
                     pass.details.push(detail);
 
                     // Look up apparent magnitude if this is a visible pass
                     if (detail.vis === this.SAT_VIS_VISIBLE) {
-                        let apmag = sat.calculateApparentMagnitude(t, qth);
-                        if (pass.max_apparent_magnitude === null || apmag < pass.max_apparent_magnitude) {
+                        const apmag = sat.calculateApparentMagnitude(t, qth);
+                        if (pass.max_apparent_magnitude === null ||
+                            apmag < pass.max_apparent_magnitude) {
                             pass.max_apparent_magnitude = apmag;
                         }
                     }
 
-                    /* store elevation if greater than the
-                        previously stored one
-                    */
+                   // Store elevation if greater than the previosly stored one
                     if (sat.el > max_el) {
                         max_el          = sat.el;
                         tca             = t;
                         pass.maxel_az   = sat.az;
                     }
-
-                    /*     g_print ("TIME: %f\tAZ: %f\tEL: %f (MAX: %f)\n", */
-                    /*           t, sat.az, sat.el, max_el); */
                 }
 
-                /* calculate satellite data */
+                // Calculate satellite data
                 this.predictCalc(sat, qth, pass.los);
-                /* store los_az, max_el and tca */
+
+                // Store los_az, max_el & tca
                 pass.los_az = sat.az;
                 pass.max_el = max_el;
                 pass.tca    = tca;
 
-                /* check whether this pass is good */
+                // Check whether this pass is good
                 if (max_el >= this.minEle) {
                     done = true;
                 } else {
@@ -231,8 +195,6 @@ class Predict
                     t0 = los + 0.014; // +20 min
                     pass = null;
                 }
-
-                iter++;
             }
         }
 
@@ -240,22 +202,22 @@ class Predict
     }
 
     /**
-     * Calculate satellite visibility.
-     *
-     *
-     * @return int The visiblity constant, 0, 1, 2, or 3 (see above)
+     * Calculate the satellite visibility.
+     * @param {PredictSat}  sat
+     * @param {PredictQTH}  qth
+     * @param {number}      jul_utc
+     * @return {number} The visiblity constant (0, 1, 2, or 3)
      */
-    getSatVis = (sat, qth, jul_utc) =>
-    {
-        let eclipse_depth  = 0.0,
-            zero_vector    = new Vector(),
-            obs_geodetic   = new Geodetic(),
+    getSatVis = (sat, qth, jul_utc) => {
+        const eclipse_depth  = 0.0;
+        const zero_vector    = new Vector();
+        const obs_geodetic   = new Geodetic();
 
-            /* Solar ECI position vector  */
-            solar_vector    = new Vector(),
+        /* Solar ECI position vector  */
+        const solar_vector    = new Vector();
 
-            /* Solar observed az and el vector  */
-            solar_set       = new ObsSet();
+        /* Solar observed az and el vector  */
+        const solar_set       = new ObsSet();
 
         /* FIXME: could be passed as parameter */
         obs_geodetic.lon   = qth.lon * Constants.de2ra;
@@ -264,13 +226,15 @@ class Predict
         obs_geodetic.theta = 0;
 
         Solar.calculateSolarPosition(jul_utc, solar_vector);
-        SGPObs.calculateObs(jul_utc, solar_vector, zero_vector, obs_geodetic, solar_set);
+        SGPObs.calculateObs(jul_utc, solar_vector, zero_vector, obs_geodetic,
+            solar_set);
 
-        let sat_sun_status, vis;
-        sat_sun_status = !Solar.satEclipsed(sat.pos, solar_vector, eclipse_depth);
+        let vis;
+        const sat_sun_status = !Solar.satEclipsed(sat.pos, solar_vector,
+            eclipse_depth);
 
         if (sat_sun_status) {
-            let sun_el = Maths.degrees(solar_set.el);
+            const sun_el = Maths.degrees(solar_set.el);
 
             if (sun_el <= this.threshold && sat.el >= 0.0) {
                 vis = this.SAT_VIS_VISIBLE;
@@ -284,22 +248,23 @@ class Predict
         return vis;
     }
 
-    /** Find the AOS time of the next pass.
-     *  @author Alexandru Csete, OZ9AEC
-     *  @author John A. Magliacane, KD2BD
-     *  @return The julain date of the next AOS or 0.0 if the satellite has no AOS.
+    /**
+     * Find the AOS time of the next pass. This function finds the time of AOS
+     * for the first coming pass taking place no earlier then start. If the
+     * satellite is currently within range, the function first calls findLos to
+     * get the next LOS time. Then the calculations are done using the new
+     * start time.
      *
-     * This function finds the time of AOS for the first coming pass taking place
-     * no earlier that start.
-     * If the satellite is currently within range, the function first calls
-     * findLos to get the next LOS time. Then the calculations are done using
-     * the new start time.
-     *
+     * @param {PredictSat}  sat
+     * @param {PredictQTH}  qth
+     * @param {number}      start
+     * @param {number}      maxdt
+     * @return {number} The Julian date of the next AOS or 0.0 if the satellite
+     * has no AOS.
      */
-    findAos = (sat, qth, start, maxdt) =>
-    {
-        let t       = start,
-            aostime = 0.0;
+    findAos = (sat, qth, start, maxdt) => {
+        let t       = start;
+        let aostime = 0.0;
 
         /* make sure current sat values are
             in sync with the time
@@ -307,10 +272,9 @@ class Predict
         this.predictCalc(sat, qth, start);
 
         /* check whether satellite has aos */
-        if ((sat.otype === this.sgpsdp.ORBIT_TYPE_GEO) ||
-            (sat.otype === this.sgpsdp.ORBIT_TYPE_DECAYED) ||
+        if ((sat.otype === sat.sgpsdp.ORBIT_TYPE_GEO) ||
+            (sat.otype === sat.sgpsdp.ORBIT_TYPE_DECAYED) ||
             !this.hasAos(sat, qth)) {
-
             return 0.0;
         }
 
@@ -329,7 +293,6 @@ class Predict
         /* use upper time limit */
 
         if (maxdt > 0.0) {
-
             /* coarse time steps */
             while ((sat.el < -1.0) && (t <= (start + maxdt))) {
                 t -= 0.00035 * (sat.el * ((sat.alt / 8400.0) + 0.46) - 2.0);
@@ -362,18 +325,23 @@ class Predict
                     t -= sat.el * Math.sqrt(sat.alt) / 530000.0;
                     this.predictCalc(sat, qth, t);
                 }
-
             }
         }
 
         return aostime;
     }
 
-    predictCalc = (sat, qth, t) =>
-    {
-        let obs_set         = new ObsSet(),
-            sat_geodetic    = new Geodetic(),
-            obs_geodetic    = new Geodetic();
+    /**
+     * The SGP4SDP4 driver for doing AOS/LOS calculations.
+     *
+     * @param {PredictSat}  sat Satellite
+     * @param {PredictQTH}  qth QTH
+     * @param {number}      t   Time for calculation
+     */
+    predictCalc = (sat, qth, t) => {
+        const obs_set         = new ObsSet;
+        const sat_geodetic    = new Geodetic;
+        const obs_geodetic    = new Geodetic;
 
         obs_geodetic.lon    = qth.lon * Constants.de2ra;
         obs_geodetic.lat    = qth.lat * Constants.de2ra;
@@ -383,20 +351,22 @@ class Predict
         sat.jul_utc         = t;
         sat.tsince          = (sat.jul_utc - sat.jul_epoch) * Constants.xmnpda;
 
-        /* call the norad routines according to the deep-space flag */
-        if (sat.flags & this.sgpsdp.DEEP_SPACE_EPHEM_FLAG) {
-            this.sgpsdp.SDP4(sat, sat.tsince);
+        // Call the NORAD routines according to the deep-space flag
+        if (sat.flags & sat.sgpsdp.DEEP_SPACE_EPHEM_FLAG) {
+            sat.sgpsdp.sdp4(sat, sat.tsince);
         } else {
-            this.sgpsdp.SGP4(sat, sat.tsince);
+            sat.sgpsdp.sgp4(sat, sat.tsince);
         }
 
         Maths.convertSatState(sat.pos, sat.vel);
 
-        /* get the velocity of the satellite */
-        sat.vel.w   = Math.sqrt(sat.vel.x * sat.vel.x + sat.vel.y * sat.vel.y + sat.vel.z * sat.vel.z);
+        // Get the velocity of the satellite
+        sat.vel.w   = Math.sqrt(sat.vel.x * sat.vel.x + sat.vel.y * sat.vel.y +
+             sat.vel.z * sat.vel.z);
         sat.velo    = sat.vel.w;
 
-        SGPObs.calculateObs(sat.jul_utc, sat.pos, sat.vel, obs_geodetic, obs_set);
+        SGPObs.calculateObs(sat.jul_utc, sat.pos, sat.vel, obs_geodetic,
+            obs_set);
         SGPObs.calculateLatLonAlt(sat.jul_utc, sat.pos, sat_geodetic);
 
         while (sat_geodetic.lon < -Constants.pi) {
@@ -418,28 +388,38 @@ class Predict
         sat.ma         *= 256.0 / 360.0;
         sat.phase       = Maths.degrees(sat.phase);
 
-        /* same formulas, but the one from predict is nicer */
-        //sat.footprint = 2.0 * xkmper * acos (xkmper/sat.pos.w);
-        sat.footprint   = 12756.33 * Math.acos(Constants.xkmper / (Constants.xkmper + sat.alt));
+        sat.footprint   = 12756.33 * Math.acos(Constants.xkmper /
+            (Constants.xkmper + sat.alt));
 
-        let age     = sat.jul_utc - sat.jul_epoch;
+        const age     = sat.jul_utc - sat.jul_epoch;
 
-        sat.orbit   = Math.floor((sat.tle.xno * Constants.xmnpda / Constants.twopi +
-            age * sat.tle.bstar * Constants.ae) * age +
+        sat.orbit   = Math.floor((sat.tle.xno * Constants.xmnpda /
+            Constants.twopi + age * sat.tle.bstar * Constants.ae) * age +
             sat.tle.xmo / Constants.twopi) + sat.tle.revnum - 1;
-
     }
 
-    findLos = (sat, qth, start, maxdt) =>
-    {
-        let t       = start,
-            lostime = 0.0;
+    /**
+     * Find the LOS time of the next pass. This function find the time of LOS
+     * for the first coming pass taking place no earlier than start. If the
+     * satellite is currently out of range, the function first calls find_aos
+     * to get the next AOS time. Then the calculations are done using the new
+     * start time.
+     *
+     * @param {PredictSat}  sat Satellite
+     * @param {PredictQTH}  qth QTH
+     * @param {number}  start   The time at which the calculation should start
+     * @param {number}  maxdt   The upper time limit in days (0.0 = no limit)
+     * @return {number}
+     */
+    findLos = (sat, qth, start, maxdt) => {
+        let t       = start;
+        let lostime = 0.0;
 
         this.predictCalc(sat, qth, start);
 
         /* check whether satellite has aos */
-        if ((sat.otype === this.sgpsdp.ORBIT_TYPE_GEO) ||
-            (sat.otype === this.sgpsdp.ORBIT_TYPE_DECAYED) ||
+        if ((sat.otype === sat.sgpsdp.ORBIT_TYPE_GEO) ||
+            (sat.otype === sat.sgpsdp.ORBIT_TYPE_DECAYED) ||
             !this.hasAos(sat, qth)) {
             return 0.0;
         }
@@ -460,13 +440,13 @@ class Predict
         if (maxdt > 0.0) {
             /* coarse steps */
             while ((sat.el >= 1.0) && (t <= (start + maxdt))) {
-                t += Math.cos((sat.el - 1.0) * Constants.de2ra) * Math.sqrt(sat.alt) / 25000.0;
+                t += Math.cos((sat.el - 1.0) * Constants.de2ra) *
+                Math.sqrt(sat.alt) / 25000.0;
                 this.predictCalc(sat, qth, t);
             }
 
             /* fine steps */
             while ((lostime === 0.0) && (t <= (start + maxdt)))  {
-
                 t += sat.el * Math.sqrt(sat.alt) / 502500.0;
                 this.predictCalc(sat, qth, t);
 
@@ -479,13 +459,13 @@ class Predict
 
             /* coarse steps */
             while (sat.el >= 1.0) {
-                t += Math.cos((sat.el - 1.0) * Constants.de2ra) * Math.sqrt(sat.alt) / 25000.0;
+                t += Math.cos((sat.el - 1.0) * Constants.de2ra) *
+                Math.sqrt(sat.alt) / 25000.0;
                 this.predictCalc(sat, qth, t);
             }
 
             /* fine steps */
             while (lostime === 0.0) {
-
                 t += sat.el * Math.sqrt(sat.alt) / 502500.0;
                 this.predictCalc(sat, qth, t);
 
@@ -497,8 +477,16 @@ class Predict
         return lostime;
     }
 
-    findPrevAos = (sat, qth, start) =>
-    {
+    /**
+     * Find AOS time of the current pass. This function can be used to find
+     * the AOS time in the past of the current pass.
+     *
+     * @param {PredictSat}  sat     Satellite
+     * @param {PredictQTH}  qth     QTH
+     * @param {number}      start   Start time
+     * @return {number}
+     */
+    findPrevAos = (sat, qth, start) => {
         let aostime = start;
 
         /* make sure current sat values are
@@ -507,10 +495,9 @@ class Predict
         this.predictCalc(sat, qth, start);
 
         /* check whether satellite has aos */
-        if ((sat.otype === this.sgpsdp.ORBIT_TYPE_GEO) ||
-            (sat.otype === this.sgpsdp.ORBIT_TYPE_DECAYED) ||
+        if ((sat.otype === sat.sgpsdp.ORBIT_TYPE_GEO) ||
+            (sat.otype === sat.sgpsdp.ORBIT_TYPE_DECAYED) ||
             !this.hasAos(sat, qth)) {
-
             return 0.0;
         }
 
@@ -522,8 +509,14 @@ class Predict
         return aostime;
     }
 
-    hasAos = (sat, qth) =>
-    {
+    /**
+     * Check if a satellite has AOS.
+     *
+     * @param {PredictSat} sat
+     * @param {PredictQTH} qth
+     * @return {boolean}
+     */
+    hasAos = (sat, qth) => {
         let retcode;
 
         if (sat.meanmo === 0.0) {
@@ -535,19 +528,35 @@ class Predict
                 lin = Constants.pi - lin;
             }
 
-            let sma = 331.25 * Math.exp(Math.log(1440.0 / sat.meanmo) * (2.0 / 3.0)),
-                apogee = sma * (1.0 + sat.tle.eo) - Constants.xkmper;
+            const sma = 331.25 * Math.exp(Math.log(1440.0 / sat.meanmo) *
+                (2.0 / 3.0));
 
+            const apogee = sma * (1.0 + sat.tle.eo) - Constants.xkmper;
 
-            retcode = (Math.acos(Constants.xkmper / (apogee + Constants.xkmper)) + (lin)) > Math.abs(qth.lat * Constants.de2ra);
+            retcode = (Math.acos(Constants.xkmper / (apogee +
+                Constants.xkmper)) + (lin)) >
+                Math.abs(qth.lat * Constants.de2ra);
         }
 
         return retcode;
     }
 
-    getPasses = (sat, qth, start, maxdt, num) =>
-    {
-        let passes = [], i, t, pass;
+    /**
+     * Predict passes after a certain time. This function calculates the num of
+     * uncoming passes with AOS no earlier than t = start and not later than
+     * t = (start + maxdt). The function will repeatedly call get_pass until
+     * the number of predicted passes is equal to num, the time has reached
+     * limit or get_pass returns null. For no time limit use maxdt = 0.0.
+     *
+     * @param {PredictSat} sat
+     * @param {PredictQTH} qth
+     * @param {number} start
+     * @param {number} maxdt
+     * @param {number} num
+     * @return {array}
+     */
+    getPasses = (sat, qth, start, maxdt, num) => {
+        const passes = []; let i; let t; let pass;
 
         /* if no number has been specified
             set it to something big */
@@ -565,9 +574,7 @@ class Predict
 
                 t = pass.los + 0.014; // +20 min
 
-                /* if maxdt > 0.0 check whether we have reached t = start + maxdt
-                    if yes finish predictions
-                */
+                // If maxdt > 0.0 check if t = start + maxdt reached
                 if ((maxdt > 0.0) && (t >= (start + maxdt))) {
                     i = num;
                 }
@@ -580,10 +587,15 @@ class Predict
         return passes;
     }
 
-    filterVisiblePasses = (passes) =>
-    {
-        let filtered = [], aos, aos_az, tca, los_az, max_el,
-            aos_el, los, los_el, max_el_az;
+    /**
+     * Filter passes by whether they'll be visible.
+     *
+     * @param {array} passes
+     * @return {array}
+     */
+    filterVisiblePasses = (passes) => {
+        const filtered = []; let aos; let aos_az; let tca; let los_az;
+        let max_el; let aos_el; let los; let los_el; let max_el_az;
 
         passes.forEach((pass) => {
             if (pass.vis.substring(0, 1) !== 'V') {
@@ -649,15 +661,21 @@ class Predict
         return filtered;
     }
 
-    azDegreesToDirection = (az = 0) =>
-    {
-        let i = Math.floor(az / 22.5),
-            m = (22.5 * (2 * i + 1)) / 2;
+    /**
+     * Convert az to a compass direction.
+     *
+     * @param {number} az
+     * @return {string}
+     */
+    azDegreesToDirection = (az = 0) => {
+        let i = Math.floor(az / 22.5);
+        const m = (22.5 * (2 * i + 1)) / 2;
 
         i = (az >= m) ? i + 1 : i;
 
-        //return trim(substr('N  NNENE ENEE  ESESE SSES  SSWSW WSWW  WNWNW NNWN  ', i * 3, 3));
-        return "test string";
+        // return trim(substr('N  NNENE ENEE  ESESE SSES  SSWSW WSWW
+        // WNWNW NNWN  ', i * 3, 3));
+        return 'test string';
     }
 }
 

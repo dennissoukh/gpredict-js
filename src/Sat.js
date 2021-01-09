@@ -148,9 +148,9 @@ class PredictSat {
 
         // Execute computations
         if (sat.flags & this.sgpsdp.DEEP_SPACE_EPHEM_FLAG) {
-            this.sgpsdp.SDP4(sat, 0.0);
+            this.sgpsdp.sdp4(sat, 0.0);
         } else {
-            this.sgpsdp.SGP4(sat, 0.0);
+            this.sgpsdp.sgp4(sat, 0.0);
         }
 
         // Scale position and velocity to km and km/sec
