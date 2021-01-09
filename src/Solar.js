@@ -84,7 +84,7 @@ satEclipsed = (pos, sol, depth) => {
  * @return {ObsSet}
  */
 findSun = (qth, daynum = null) => {
-    if (daynum === null) {
+    if (!daynum) {
         daynum = Time.getCurrentDayNumber();
     }
 
@@ -98,7 +98,7 @@ findSun = (qth, daynum = null) => {
     const zero_vector  = new Vector();
     const solar_set    = new ObsSet();
 
-    this.calculateSolarPosition(daynum, solar_vector);
+    calculateSolarPosition(daynum, solar_vector);
 
     SGPObs.calculateObs(
         daynum,
