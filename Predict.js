@@ -1,14 +1,14 @@
-const Vector        = require('./Vector');
-const Geodetic      = require('./Geodetic');
-const ObsSet        = require('./ObsSet');
-const Time          = require('./Time');
-const Maths         = require('./Math');
-const SGPObs        = require('./SGPObs');
-const Solar         = require('./Solar');
-const Pass          = require('./Pass');
-const PassDetail    = require('./PassDetail');
-const Constants     = require('./Constants');
-const Utils         = require('./Utils');
+const Vector        = require('./src/Vector');
+const Geodetic      = require('./src/Geodetic');
+const ObsSet        = require('./src/ObsSet');
+const Time          = require('./src/Time');
+const Maths         = require('./src/Math');
+const SGPObs        = require('./src/SGPObs');
+const Solar         = require('./src/Solar');
+const Pass          = require('./src/Pass');
+const PassDetail    = require('./src/PassDetail');
+const Constants     = require('./src/Constants');
+const Utils         = require('./src/Utils');
 
 /**
  * The main Predict class.
@@ -114,7 +114,7 @@ class Predict {
                     // Calculate satellite data
                     this.predictCalc(sat, qth, t);
 
-                   // In the first iter, store pass.aos_az
+                    // In the first iter, store pass.aos_az
                     if (t === pass.aos) {
                         pass.aos_az = sat.az;
                         pass.orbit  = sat.orbit;
@@ -171,7 +171,7 @@ class Predict {
                         }
                     }
 
-                   // Store elevation if greater than the previosly stored one
+                    // Store elevation if greater than the previosly stored one
                     if (sat.el > max_el) {
                         max_el          = sat.el;
                         tca             = t;
@@ -555,31 +555,26 @@ class Predict {
      * @param {number} num
      * @return {array}
      */
-    getPasses = (sat, qth, start, maxdt, num) => {
+    getPasses = (sat, qth, start, maxdt, num = 10) => {
         const passes = []; let i; let t; let pass;
-
-        /* if no number has been specified
-            set it to something big */
-        if (num === 0) {
-            num = 100;
-        }
 
         t = start;
 
-        for (i = 0; i < 10; i++) {
+        for (i = 0; i < num; i++) {
             pass = this.getPass(sat, qth, t, maxdt);
 
             if (pass != null) {
                 passes.push(pass);
 
-                t = pass.los + 0.014; // +20 min
+                // +20 min
+                t = pass.los + 0.014;
 
                 // If maxdt > 0.0 check if t = start + maxdt reached
                 if ((maxdt > 0.0) && (t >= (start + maxdt))) {
                     i = num;
                 }
             } else {
-                /* we can't get any more passes */
+                // No more passes available
                 i = num;
             }
         }

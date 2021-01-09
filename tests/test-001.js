@@ -1,6 +1,5 @@
 const PredictTLE = require('../src/TLE');
 const PredictSat = require('../src/Sat');
-const PredictSGPSDP = require('../src/SGPSDP');
 const PredictMath = require('../src/Math');
 
 const satTle = {
@@ -64,7 +63,7 @@ let tle = new PredictTLE(satTle.line0, satTle.line1, satTle.line2),
 let count = 0;
 
 expected.forEach(e => {
-    sat.sgpsdp.SGP4(sat, e.step);
+    sat.sgpsdp.sgp4(sat, e.step);
     PredictMath.convertSatState(sat.pos, sat.vel);
 
     data[count] = {

@@ -62,7 +62,7 @@ let data    = [],
     count   = 0;
 
 expected.forEach(e => {
-    sat.sgpsdp.SGP4(sat, e.step);
+    sat.sgpsdp.sgp4(sat, e.step);
     PredictMath.convertSatState(sat.pos, sat.vel);
 
     data[count] = {
